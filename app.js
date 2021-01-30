@@ -3,6 +3,8 @@ const exphbs = require('express-handlebars')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 
+const User = require('./models/User.js')
+
 const app = express()
 const port = 3000
 
@@ -24,6 +26,26 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.get('/', (req, res) => {
   res.render('index')
+})
+
+app.post('/login', (req, res) => {
+  const { email, password } = req.body
+  return User.find({ email: email })
+    .lean()
+    .then(user => {
+      if (user[0].password === password) {
+        const firstName = user[0].firstName
+        res.render('welcome', { firstName })
+      } else {
+        res.redirect('/')
+      }
+      return
+    })
+    .catch(error => {
+      res.redirect('/')
+      console.log(error)
+      return
+    })
 })
 
 app.listen(port, () => {
